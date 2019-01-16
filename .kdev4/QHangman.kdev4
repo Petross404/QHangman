@@ -1,0 +1,34 @@
+[Buildset]
+BuildItems=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x01\x00\x00\x00\x0b\x00\x00\x00\x00\x01\x00\x00\x00\x10\x00Q\x00H\x00a\x00n\x00g\x00m\x00a\x00n)
+
+[CMake]
+Build Directory Count=1
+Current Build Directory Index-Host System=0
+
+[CMake][CMake Build Directory 0]
+Build Directory Path=C:/Users/Petros/projects/QHangman/build
+Build Type=Debug
+CMake Binary=C:/Program Files/CMake/bin/cmake.exe
+CMake Executable=C:/Program Files/CMake/bin/cmake.exe
+Environment Profile=
+Extra Arguments=
+Install Directory=
+Runtime=Host System
+
+[NinjaBuilder]
+Default Ninja Environment Profile=Qt5_MSVC
+
+[Project]
+VersionControlSupport=kdevgit
+
+[SourceFormatter]
+ModelinesEnabled=true
+OverrideKateIndentation=true
+UseDefault=false
+text/x-c++hdr=kdevastyle||User1
+text/x-c++src=kdevastyle||User1
+text/x-chdr=kdevcustomscript||GNU_indent_GNU
+text/x-csharp=kdevcustomscript||GNU_indent_GNU
+text/x-csrc=kdevcustomscript||GNU_indent_GNU
+text/x-java=kdevcustomscript||GNU_indent_GNU
+text/x-objcsrc=kdevcustomscript||GNU_indent_GNU
