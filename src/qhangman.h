@@ -8,7 +8,9 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QGraphicsScene>
 #include <QtWidgets/QGraphicsView>
-#include <QGraphicsLineItem>
+#include <QtWidgets/QGraphicsLineItem>
+#include <QtWidgets/QGraphicsRectItem>
+#include <QtWidgets/QGraphicsEllipseItem>
 
 namespace Ui
 {
@@ -39,6 +41,8 @@ private:
 	QScopedPointer<QGraphicsLineItem>	lineHorizontal;
 	QScopedPointer<QGraphicsLineItem>	lineVertical;
 	QScopedPointer<QGraphicsLineItem>	lineHorizontalSmall;
+	QScopedPointer<QGraphicsEllipseItem>	ellipseHead;
+	QScopedPointer<QGraphicsRectItem>	rectBody;
 
 protected:
 	void paintEvent(QPaintEvent* e) override;

@@ -14,11 +14,14 @@ QHangman::QHangman( QWidget* parent ) :
 	, graphView( new QGraphicsView( graphScene.data() ) )
 	, brush( new QBrush( Qt::black ) )
 	, lineHorizontal( new QGraphicsLineItem( QLineF(
-					QPointF( 1, 0 ), QPointF( 1, 120 ) ) ) )
+	                          QPointF( 1, 0 ), QPointF( 1, 120 ) ) ) )
 	, lineVertical( new QGraphicsLineItem( QLineF(
-					QPointF( 1, 120 ), QPointF( 40, 120 ) ) ) )
+	                QPointF( 1, 120 ), QPointF( 40, 120 ) ) ) )
 	, lineHorizontalSmall( new QGraphicsLineItem( QLineF(
-					QPointF( 40, 90 ), QPointF( 40, 30 ) ) ) )
+	                               QPointF( 40, 90 ), QPointF( 40, 30 ) ) ) )
+	, ellipseHead( new QGraphicsEllipseItem( QRectF(
+	                        QPointF( 20, 50 ), QSizeF( 11, 16 ) ) ) )
+	, rectBody( new QGraphicsRectItem( 100, 200, 20 , 40, Q_NULLPTR) )
 {
 	m_ui->setupUi( this );
 
@@ -33,24 +36,23 @@ QHangman::QHangman( QWidget* parent ) :
 
 	graphView->setAlignment( Qt::AlignCenter | Qt::AlignBottom );
 	paintHangMan();
-
 }
 
 void QHangman::paintHangMan()
 {
 	QPen pen;
-	pen.setWidth(2);
-	graphScene->addLine(lineHorizontal.data()->line(), pen);
+	pen.setWidth( 2 );
+	graphScene->addLine( lineHorizontal.data()->line(), pen );
 	graphScene->addLine( lineVertical.data()->line(), pen );
 	graphScene->addLine( lineHorizontalSmall.data()->line(), pen );
+	graphScene->addEllipse( ellipseHead.data()->rect(), pen);
+	graphScene->addRect( rectBody.data()->rect(), pen );
 }
 
 void QHangman::paintEvent( QPaintEvent* e )
 {
 	QPainter painter;
 	QPolygon poly;
-
-
 }
 
 QHangman::~QHangman() = default;
