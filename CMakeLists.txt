@@ -17,7 +17,7 @@ set(qhangman_SRC
 )
 
 # Tell CMake to create the helloworld executable
-add_executable(qhangman ${qhangman_SRC})
+add_executable(qhangman ${PLATFORM_TARGET} ${qhangman_SRC})
 
 # Use the Widgets module from Qt 5.
 target_link_libraries(qhangman Qt5::Widgets)

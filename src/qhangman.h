@@ -5,6 +5,7 @@
 #include <QScopedPointer>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QTextEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QGraphicsScene>
 #include <QtWidgets/QGraphicsView>
@@ -26,12 +27,16 @@ public:
 	~QHangman() override;
 
 	void paintHangMan();
+	void setupConnections();
+	void resetView();
 
 private:
 	QScopedPointer<Ui::QHangman>	m_ui;
 	QScopedPointer<QGridLayout>	gridHangMan;
 	QScopedPointer<QVBoxLayout>	vboxWidgets;
 	QScopedPointer<QLabel>		pointsLabel;
+	QScopedPointer<QLabel>		outputLabel;
+	QScopedPointer<QTextEdit>	textEdit;
 	QScopedPointer<QPushButton>	enterBtn;
 	QScopedPointer<QPushButton>	resetBtn;
 	QScopedPointer<QPushButton>	quitBtn;
@@ -41,8 +46,13 @@ private:
 	QScopedPointer<QGraphicsLineItem>	lineHorizontal;
 	QScopedPointer<QGraphicsLineItem>	lineVertical;
 	QScopedPointer<QGraphicsLineItem>	lineHorizontalSmall;
+	QScopedPointer<QGraphicsLineItem>	lineNeck;
 	QScopedPointer<QGraphicsEllipseItem>	ellipseHead;
 	QScopedPointer<QGraphicsRectItem>	rectBody;
+	QScopedPointer<QGraphicsLineItem>	rightArm;
+	QScopedPointer<QGraphicsLineItem>	leftArm;
+	QScopedPointer<QGraphicsLineItem>	rightLeg;
+	QScopedPointer<QGraphicsLineItem>	leftLeg;
 
 protected:
 	void paintEvent(QPaintEvent* e) override;

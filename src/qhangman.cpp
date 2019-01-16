@@ -7,6 +7,8 @@ QHangman::QHangman( QWidget* parent ) :
 	, gridHangMan( new QGridLayout )
 	, vboxWidgets( new QVBoxLayout )
 	, pointsLabel( new QLabel( tr( "Points" ) ) )
+	, outputLabel( new QLabel )
+	, textEdit(new QTextEdit)
 	, enterBtn( new QPushButton( tr( "Enter" ) ) )
 	, resetBtn( new QPushButton( tr( "Reset Word" ) ) )
 	, quitBtn( new QPushButton( tr( "Quit" ) ) )
@@ -14,27 +16,42 @@ QHangman::QHangman( QWidget* parent ) :
 	, graphView( new QGraphicsView( graphScene.data() ) )
 	, brush( new QBrush( Qt::black ) )
 	, lineHorizontal( new QGraphicsLineItem( QLineF(
-	                          QPointF( 1, 0 ), QPointF( 1, 120 ) ) ) )
+	                          QPointF( 1, 0 ), QPointF( 1, 180 ) ) ) )
 	, lineVertical( new QGraphicsLineItem( QLineF(
-	                QPointF( 1, 120 ), QPointF( 40, 120 ) ) ) )
+	                QPointF( 99, 0 ), QPointF( 0, 0 ) ) ) )
 	, lineHorizontalSmall( new QGraphicsLineItem( QLineF(
-	                               QPointF( 40, 90 ), QPointF( 40, 30 ) ) ) )
+	                               QPointF( 99, 0 ), QPointF( 99, 40 ) ) ) )
+	, lineNeck( new QGraphicsLineItem( QLineF( QPointF( 99, 85 ), QPointF( 99, 70 ) ) ) )
 	, ellipseHead( new QGraphicsEllipseItem( QRectF(
-	                        QPointF( 20, 50 ), QSizeF( 11, 16 ) ) ) )
-	, rectBody( new QGraphicsRectItem( 100, 200, 20 , 40, Q_NULLPTR) )
+	                        QPointF( 88, 40 ), QSizeF( 21, 30 ) ) ) )
+	, rectBody( new QGraphicsRectItem( 89, 87, 20, 40, Q_NULLPTR ) )
+	, rightArm( new QGraphicsLineItem( 57, 96, 87 , 89, Q_NULLPTR ) )
+	, leftArm( new QGraphicsLineItem(108, 89, 137, 96, Q_NULLPTR ) )
 {
 	m_ui->setupUi( this );
+	setMinimumSize( 650, 500 );
+	vboxWidgets->setSizeConstraint( QLayout::SetMaximumSize );
+	outputLabel->setFrameShape(QFrame::Box);
+	outputLabel->setMaximumHeight(40);
+	textEdit->setMaximumHeight(30);
 
 	m_ui->gridLayout->addLayout( gridHangMan.data(), 0, 0 );
 	m_ui->gridLayout->addLayout( vboxWidgets.data(), 0, 1 );
 
 	gridHangMan->addWidget( graphView.data(), 0, 0 );
 	vboxWidgets->addWidget( pointsLabel.data() );
+	vboxWidgets->addWidget( outputLabel.data() );
+	vboxWidgets->addWidget( textEdit.data() );
 	vboxWidgets->addWidget( enterBtn.data() );
 	vboxWidgets->addWidget( resetBtn.data() );
 	vboxWidgets->addWidget( quitBtn.data() );
 
+	pointsLabel->setMinimumWidth( 250 );
 	graphView->setAlignment( Qt::AlignCenter | Qt::AlignBottom );
+// 	graphView->ensureVisible(graphScene.data()->sceneRect());
+	graphView->fitInView( graphScene.data()->sceneRect(), Qt::KeepAspectRatio );
+
+	setupConnections();
 	paintHangMan();
 }
 
@@ -45,8 +62,22 @@ void QHangman::paintHangMan()
 	graphScene->addLine( lineHorizontal.data()->line(), pen );
 	graphScene->addLine( lineVertical.data()->line(), pen );
 	graphScene->addLine( lineHorizontalSmall.data()->line(), pen );
-	graphScene->addEllipse( ellipseHead.data()->rect(), pen);
+	graphScene->addEllipse( ellipseHead.data()->rect(), pen );
+	graphScene->addLine( lineNeck.data()->line(), pen );
 	graphScene->addRect( rectBody.data()->rect(), pen );
+	graphScene->addLine( rightArm.data()->line(), pen );
+	graphScene->addLine( leftArm.data()->line(), pen );
+}
+
+void QHangman::resetView()
+{
+	graphScene->clear();
+}
+
+void QHangman::setupConnections()
+{
+	connect(quitBtn.data(), &QPushButton::clicked, this, &QApplication::quit);
+	connect(resetBtn.data(), &QPushButton::clicked, this, &QHangman::resetView);
 }
 
 void QHangman::paintEvent( QPaintEvent* e )
