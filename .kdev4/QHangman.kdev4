@@ -6,13 +6,13 @@ Build Directory Count=1
 Current Build Directory Index-Host System=0
 
 [CMake][CMake Build Directory 0]
-Build Directory Path=C:/Users/Petros/projects/QHangman/build
+Build Directory Path=C:/Users/petros/QHangman/build
 Build Type=Debug
 CMake Binary=C:/Program Files/CMake/bin/cmake.exe
 CMake Executable=C:/Program Files/CMake/bin/cmake.exe
 Environment Profile=
 Extra Arguments=
-Install Directory=
+Install Directory=C:/Program Files (x86)/QHangman
 Runtime=Host System
 
 [CustomDefinesAndIncludes][ProjectPath0]
@@ -26,20 +26,15 @@ parserArgumentsOpenCL=-ferror-limit=100 -fspell-checking -Wdocumentation -Wunuse
 [CustomDefinesAndIncludes][ProjectPath0][Compiler]
 Name=MSVC
 
-[NinjaBuilder]
-Default Ninja Environment Profile=Qt5_MSVC
-
 [Project]
 VersionControlSupport=kdevgit
 
 [SourceFormatter]
-ModelinesEnabled=true
-OverrideKateIndentation=true
 UseDefault=false
 text/x-c++hdr=kdevastyle||User1
 text/x-c++src=kdevastyle||User1
-text/x-chdr=kdevcustomscript||GNU_indent_GNU
-text/x-csharp=kdevcustomscript||GNU_indent_GNU
-text/x-csrc=kdevcustomscript||GNU_indent_GNU
-text/x-java=kdevcustomscript||GNU_indent_GNU
-text/x-objcsrc=kdevcustomscript||GNU_indent_GNU
+text/x-chdr=kdevastyle||1TBS
+text/x-csharp=kdevastyle||1TBS
+text/x-csrc=kdevastyle||1TBS
+text/x-java=kdevastyle||1TBS
+text/x-objcsrc=kdevastyle||1TBS
