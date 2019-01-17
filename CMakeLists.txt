@@ -8,6 +8,12 @@ set(CMAKE_AUTOMOC ON)
 # Instruct CMake to create code from Qt designer ui files
 set(CMAKE_AUTOUIC ON)
 
+option(ENABLE_OFFENSIVE "Enable offensive messages" OFF)
+if(ENABLE_OFFENSIVE)
+	message(STATUS "Enabled offensive messages")
+	add_definitions(-DENABLE_OFFENSIVE)
+endif()
+
 # Find the QtWidgets library
 find_package(Qt5Widgets CONFIG REQUIRED)
 

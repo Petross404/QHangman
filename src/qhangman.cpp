@@ -1,6 +1,12 @@
 #include "qhangman.h"
 #include "ui_qhangman.h"
 
+#include <map>
+#include <functional>
+#include <random>
+#include <vector>
+#include <iostream>
+
 QHangman::QHangman( QWidget* parent ) :
 	QMainWindow( parent )
 	, m_ui( new Ui::QHangman )
@@ -12,8 +18,8 @@ QHangman::QHangman( QWidget* parent ) :
 	, enterBtn( new QPushButton( tr( "Enter" ) ) )
 	, resetBtn( new QPushButton( tr( "Reset Word" ) ) )
 	, quitBtn( new QPushButton( tr( "Quit" ) ) )
-	, graphScene( new QGraphicsScene )
-	, graphView( new QGraphicsView( graphScene.data() ) )
+	, scene( new QGraphicsScene )
+	, view( new QGraphicsView( scene.data() ) )
 	, brush( new QBrush( Qt::black ) )
 	, lineHorizontal( new QGraphicsLineItem( QLineF(
 	                          QPointF( 1, 0 ), QPointF( 1, 180 ) ) ) )
@@ -30,22 +36,25 @@ QHangman::QHangman( QWidget* parent ) :
 	, rightLeg( new QGraphicsLineItem( QLineF( QPointF( 89, 129 ), QPointF( 79, 158 ) ) ) )
 	, leftLeg( new QGraphicsLineItem( QLineF( QPointF( 110, 129 ), QPointF( 120, 158 ) ) ) )
 	, mWord( "computer" )
+	, errorCnt( 0 )
 {
 	m_ui->setupUi( this );
 	setMinimumSize( 650, 500 );
 	vboxWidgets->setSizeConstraint( QLayout::SetMaximumSize );
-	outputTextEdit->setTextInteractionFlags( Qt::TextSelectableByMouse 
-						| Qt::TextSelectableByKeyboard );
-	outputTextEdit->setAlignment(Qt::AlignJustify | Qt::AlignVCenter);
-	outputTextEdit->setFont(QFont("Times", 10, QFont::Bold));
+	outputTextEdit->setTextInteractionFlags( Qt::TextSelectableByMouse
+	                | Qt::TextSelectableByKeyboard );
+	outputTextEdit->setAlignment( Qt::AlignCenter | Qt::AlignVCenter );
+	outputTextEdit->setFont( QFont( "Times", 10, QFont::Bold ) );
 	outputTextEdit->setMaximumHeight( 35 );
 	lineEdit->setMaximumHeight( 30 );
-	lineEdit->setFont(QFont("Oxygen Mono", 9, QFont::Bold));
+	lineEdit->setFont( QFont( "Oxygen Mono", 9, QFont::Bold ) );
+	lineEdit->setMaxLength( 1 );
+	enterBtn->setEnabled( false );
 
 	m_ui->gridLayout->addLayout( gridHangMan.data(), 0, 0 );
 	m_ui->gridLayout->addLayout( vboxWidgets.data(), 0, 1 );
 
-	gridHangMan->addWidget( graphView.data(), 0, 0 );
+	gridHangMan->addWidget( view.data(), 0, 0 );
 	vboxWidgets->addWidget( pointsLabel.data() );
 	vboxWidgets->addWidget( outputTextEdit.data() );
 	vboxWidgets->addWidget( lineEdit.data() );
@@ -54,13 +63,18 @@ QHangman::QHangman( QWidget* parent ) :
 	vboxWidgets->addWidget( quitBtn.data() );
 
 	pointsLabel->setMinimumWidth( 250 );
-	graphView->setAlignment( Qt::AlignCenter | Qt::AlignBottom );
+	view->setAlignment( Qt::AlignCenter | Qt::AlignBottom );
 // 	graphView->ensureVisible(graphScene.data()->sceneRect());
-	graphView->fitInView( graphScene.data()->sceneRect(), Qt::KeepAspectRatio );
+	view->fitInView( scene.data()->sceneRect(), Qt::KeepAspectRatio );
 
 	setupConnections();
 	printWord();
 	//paintHangMan();
+}
+
+void QHangman::enterFnct()
+{
+	printWord();
 }
 
 QString QHangman::getStringOfLineEdit()
@@ -68,27 +82,82 @@ QString QHangman::getStringOfLineEdit()
 	return lineEdit->text();
 }
 
+QString QHangman::hideWord(QString str)
+{
+	size_t sz = str.size();
+	std::vector<int> v( sz );
+	std::mt19937 rng;
+	rng.seed( std::random_device()() );
+	std::uniform_int_distribution<std::mt19937::result_type> dist( 0, ( sz - 1 ) );	// distribution in range [0, a.size()-1]
+	
+	for ( size_t i = 0; i <= 2; ++i )
+	{
+		v.at( i ) = dist( rng );
+	}
+	
+	for(size_t i = 0; i <= sz; ++i)
+	{
+		//At position i, replace the next 1 char with '-'
+		str.replace(v.at(i), 1, '-');
+	}
+
+	return str;
+}
+
 void QHangman::paintHangMan()
 {
+#ifndef ENABLE_OFFENSIVE
+	QString msg {"Oops"};
+#else
+	QString msg {"Die!"};
+#endif
 	QPen pen;
 	QPen boldPen;
 	pen.setWidth( 2 );
 	boldPen.setWidth( 6 );
-	graphScene->addLine( lineHorizontal.data()->line(), pen );
-	graphScene->addLine( lineVertical.data()->line(), pen );
-	graphScene->addLine( lineHorizontalSmall.data()->line(), pen );
-	graphScene->addEllipse( ellipseHead.data()->rect(), pen );
-	graphScene->addLine( lineNeck.data()->line(), pen );
-	graphScene->addRect( rectBody.data()->rect(), pen );
-	graphScene->addLine( rightArm.data()->line(), pen );
-	graphScene->addLine( leftArm.data()->line(), pen );
-	graphScene->addLine( rightLeg.data()->line(), pen );
-	graphScene->addLine( leftLeg.data()->line(), pen );
+	auto draw1 = [this, pen]() {scene->addLine( lineHorizontal.data()->line(), pen );};
+	auto draw2 = [this, pen]() {scene->addLine( lineVertical.data()->line(), pen );};
+	auto draw3 = [this, pen]() {scene->addLine( lineHorizontalSmall.data()->line(), pen );};
+	auto draw4 = [this, pen]() {scene->addEllipse( ellipseHead.data()->rect(), pen );};
+	auto draw5 = [this, pen]() {scene->addLine( lineNeck.data()->line(), pen );};
+	auto draw6 = [this, pen]() {scene->addRect( rectBody.data()->rect(), pen );};
+	auto draw7 = [this, pen]() {scene->addLine( rightArm.data()->line(), pen );};
+	auto draw8 = [this, pen]() {scene->addLine( leftArm.data()->line(), pen );};
+	auto draw9 = [this, pen]() {scene->addLine( rightLeg.data()->line(), pen );};
+	auto draw10 = [this, pen]() {scene->addLine( leftLeg.data()->line(), pen );};
+	auto drawFinal = [this, msg]()
+	{
+		scene->addText( msg, QFont( "Arial", 20 ) );
+		scene->setBackgroundBrush( QBrush( Qt::red ) );
+		enterBtn->setEnabled( false );
+		lineEdit->setEnabled( false );
+	};
+	auto reset = [this]() {resetView();};
+
+	std::map<int, std::function<void()>> mp
+	{
+		{1,	draw1},
+		{2,	draw2},
+		{3,	draw3},
+		{4,	draw4},
+		{5,	draw5},
+		{6,	draw6},
+		{7,	draw7},
+		{8,	draw8},
+		{9,	draw9},
+		{10,	draw10},
+		{11,	drawFinal},
+		{12,	reset}
+	};
+	//Execute!
+	mp.at( errorCnt )();
 }
 
 void QHangman::resetView()
 {
-	graphScene->clear();
+	scene->clear();
+	scene->setBackgroundBrush( QBrush( Qt::white ) );
+	errorCnt = 0;
 }
 
 void QHangman::setupConnections()
@@ -96,7 +165,17 @@ void QHangman::setupConnections()
 	connect( quitBtn.data(), &QPushButton::clicked, this, &QApplication::quit );
 	connect( resetBtn.data(), &QPushButton::clicked, this, &QHangman::resetView );
 	connect( enterBtn.data(), &QPushButton::clicked, this, &QHangman::printWord );
-	connect( lineEdit.data(), &QLineEdit::returnPressed, enterBtn.data(), &QPushButton::clicked );
+	connect( lineEdit.data(), &QLineEdit::returnPressed, enterBtn.data(), &QPushButton::click );
+
+	//The enter btn shouldn't be enabled when no text exists in the lineEdit
+	connect( lineEdit.data(), &QLineEdit::textChanged,
+	         this,
+	         [this]()
+	{
+		if ( !lineEdit->text().isEmpty() ) { enterBtn->setEnabled( true ); }
+		else { enterBtn->setEnabled( false ); }
+	}
+	       );
 
 	//Each time the user wants to write a character, the previous must be erased
 	connect( enterBtn.data(), &QPushButton::clicked, lineEdit.data(), &QLineEdit::clear );
@@ -110,13 +189,16 @@ void QHangman::paintEvent( QPaintEvent* e )
 
 void QHangman::printWord()
 {
-	
-	QString a = getStringOfLineEdit();
-	if (!mWord.contains(a, Qt::CaseInsensitive))
+	QString character = lineEdit->text();
+	QString temporaryStr = hideWord(mWord);
+	size_t sz = mWord.size();
+
+	outputTextEdit->setText(temporaryStr);
+	if ( !mWord.contains( character, Qt::CaseInsensitive ) )
 	{
+		++errorCnt;
 		paintHangMan();
 	}
-	else outputTextEdit->setText( mWord );
 }
 
 QHangman::~QHangman() = default;

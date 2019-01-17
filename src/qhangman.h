@@ -32,10 +32,12 @@ public:
     void setupConnections();
 
 public slots:
-	QString getStringOfLineEdit();
-	void printWord();
-	void paintHangMan();
-	void resetView();
+    QString getStringOfLineEdit();
+    void enterFnct();
+    void printWord();
+    void paintHangMan();
+    void resetView();
+    QString hideWord(QString str);
 
 private:
     QScopedPointer<Ui::QHangman>	m_ui;
@@ -47,8 +49,8 @@ private:
     QScopedPointer<QPushButton>		enterBtn;
     QScopedPointer<QPushButton>		resetBtn;
     QScopedPointer<QPushButton>		quitBtn;
-    QScopedPointer<QGraphicsScene>	graphScene;
-    QScopedPointer<QGraphicsView>	graphView;
+    QScopedPointer<QGraphicsScene>	scene;
+    QScopedPointer<QGraphicsView>	view;
     QScopedPointer<QBrush>		brush;
     QScopedPointer<QGraphicsLineItem>		lineHorizontal;
     QScopedPointer<QGraphicsLineItem>		lineVertical;
@@ -63,6 +65,7 @@ private:
 
     QString	mWord;
     char 	mChar;
+    int		errorCnt;
 
 protected:
     void paintEvent ( QPaintEvent* e ) override;

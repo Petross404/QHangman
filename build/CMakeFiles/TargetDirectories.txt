@@ -1,7 +1,0 @@
-C:/Users/petros/QHangman/build/CMakeFiles/install/local.dir
-C:/Users/petros/QHangman/build/CMakeFiles/install.dir
-C:/Users/petros/QHangman/build/CMakeFiles/edit_cache.dir
-C:/Users/petros/QHangman/build/CMakeFiles/qhangman.dir
-C:/Users/petros/QHangman/build/CMakeFiles/rebuild_cache.dir
-C:/Users/petros/QHangman/build/CMakeFiles/list_install_components.dir
-C:/Users/petros/QHangman/build/CMakeFiles/qhangman_autogen.dir
