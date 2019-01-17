@@ -6,6 +6,7 @@
 #include <random>
 #include <vector>
 #include <iostream>
+#include <QMessageBox>
 
 QHangman::QHangman( QWidget* parent ) :
 	QMainWindow( parent )
@@ -99,6 +100,7 @@ QString QHangman::hideWord(QString str)
 	{
 		//At position i, replace the next 1 char with '-'
 		str.replace(v.at(i), 1, '-');
+		qDebug(str.toLatin1());
 	}
 
 	return str;
@@ -189,16 +191,20 @@ void QHangman::paintEvent( QPaintEvent* e )
 
 void QHangman::printWord()
 {
+	QMessageBox box;
 	QString character = lineEdit->text();
 	QString temporaryStr = hideWord(mWord);
 	size_t sz = mWord.size();
 
+	temporaryStr.replace(1, 1, QString("-"));
 	outputTextEdit->setText(temporaryStr);
 	if ( !mWord.contains( character, Qt::CaseInsensitive ) )
 	{
 		++errorCnt;
 		paintHangMan();
 	}
+	box.setText(temporaryStr);
+	box.exec();
 }
 
 QHangman::~QHangman() = default;
