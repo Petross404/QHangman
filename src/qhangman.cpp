@@ -88,14 +88,14 @@ QString QHangman::hideWord(QString str)
 	size_t sz = str.size();
 	std::vector<int> v( sz );
 	std::mt19937 rng;
-	rng.seed( std::random_device()() );
+ 	rng.seed( std::random_device()() );
 	std::uniform_int_distribution<std::mt19937::result_type> dist( 0, ( sz - 1 ) );	// distribution in range [0, a.size()-1]
-	
+ 	
 	for ( size_t i = 0; i <= 2; ++i )
 	{
 		v.at( i ) = dist( rng );
 	}
-	
+
 	for(size_t i = 0; i <= sz; ++i)
 	{
 		//At position i, replace the next 1 char with '-'
@@ -176,8 +176,7 @@ void QHangman::setupConnections()
 	{
 		if ( !lineEdit->text().isEmpty() ) { enterBtn->setEnabled( true ); }
 		else { enterBtn->setEnabled( false ); }
-	}
-	       );
+	});
 
 	//Each time the user wants to write a character, the previous must be erased
 	connect( enterBtn.data(), &QPushButton::clicked, lineEdit.data(), &QLineEdit::clear );
@@ -191,7 +190,6 @@ void QHangman::paintEvent( QPaintEvent* e )
 
 void QHangman::printWord()
 {
-	QMessageBox box;
 	QString character = lineEdit->text();
 	QString temporaryStr = hideWord(mWord);
 	size_t sz = mWord.size();
@@ -203,8 +201,6 @@ void QHangman::printWord()
 		++errorCnt;
 		paintHangMan();
 	}
-	box.setText(temporaryStr);
-	box.exec();
 }
 
 QHangman::~QHangman() = default;
