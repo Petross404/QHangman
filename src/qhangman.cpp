@@ -6,7 +6,8 @@
 #include <random>
 #include <vector>
 #include <iostream>
-#include <QMessageBox>
+#include <cstdlib>
+#include <ctime>
 
 QHangman::QHangman( QWidget* parent ) :
 	QMainWindow( parent )
@@ -45,7 +46,7 @@ QHangman::QHangman( QWidget* parent ) :
 	outputTextEdit->setTextInteractionFlags( Qt::TextSelectableByMouse
 	                | Qt::TextSelectableByKeyboard );
 	outputTextEdit->setAlignment( Qt::AlignCenter | Qt::AlignVCenter );
-	outputTextEdit->setFont( QFont( "Times", 10, QFont::Bold ) );
+	outputTextEdit->setFont( QFont( "Times", 11, QFont::DemiBold ) );
 	outputTextEdit->setMaximumHeight( 35 );
 	lineEdit->setMaximumHeight( 30 );
 	lineEdit->setFont( QFont( "Oxygen Mono", 9, QFont::Bold ) );
@@ -56,8 +57,8 @@ QHangman::QHangman( QWidget* parent ) :
 	m_ui->gridLayout->addLayout( vboxWidgets.data(), 0, 1 );
 
 	gridHangMan->addWidget( view.data(), 0, 0 );
+	gridHangMan->addWidget( outputTextEdit.data(), 1, 0);
 	vboxWidgets->addWidget( pointsLabel.data() );
-	vboxWidgets->addWidget( outputTextEdit.data() );
 	vboxWidgets->addWidget( lineEdit.data() );
 	vboxWidgets->addWidget( enterBtn.data() );
 	vboxWidgets->addWidget( resetBtn.data() );
@@ -65,17 +66,27 @@ QHangman::QHangman( QWidget* parent ) :
 
 	pointsLabel->setMinimumWidth( 250 );
 	view->setAlignment( Qt::AlignCenter | Qt::AlignBottom );
-// 	graphView->ensureVisible(graphScene.data()->sceneRect());
 	view->fitInView( scene.data()->sceneRect(), Qt::KeepAspectRatio );
 
-	setupConnections();
-	printWord();
-	//paintHangMan();
-}
+	srand( static_cast<int>( time( 0 ) ) );		///It's best to call srand only once
+	handleText();
 
-void QHangman::enterFnct()
-{
-	printWord();
+	connect( quitBtn.data(), &QPushButton::clicked, this, &QApplication::quit );
+	connect( resetBtn.data(), &QPushButton::clicked, this, &QHangman::resetView );
+// 	connect( enterBtn.data(), &QPushButton::clicked, this, &QHangman::printWord );
+	connect( lineEdit.data(), &QLineEdit::returnPressed, enterBtn.data(), &QPushButton::click );
+
+	//The enter btn shouldn't be enabled when no text exists in the lineEdit
+	connect( lineEdit.data(), &QLineEdit::textChanged,
+	         this,
+	         [this]()
+	{
+		if ( !lineEdit->text().isEmpty() ) { enterBtn->setEnabled( true ); }
+		else { enterBtn->setEnabled( false ); }
+	} );
+
+	//Each time the user wants to write a character, the previous must be erased
+	connect( enterBtn.data(), &QPushButton::clicked, lineEdit.data(), &QLineEdit::clear );
 }
 
 QString QHangman::getStringOfLineEdit()
@@ -83,24 +94,27 @@ QString QHangman::getStringOfLineEdit()
 	return lineEdit->text();
 }
 
-QString QHangman::hideWord(QString str)
+void QHangman::handleText()
+{
+	QString temporaryStr{hideWord( mWord )};
+	size_t sz = mWord.size();
+
+	printWord(temporaryStr);
+}
+QString QHangman::hideWord( QString str )
 {
 	size_t sz = str.size();
-	std::vector<int> v( sz );
-	std::mt19937 rng;
- 	rng.seed( std::random_device()() );
-	std::uniform_int_distribution<std::mt19937::result_type> dist( 0, ( sz - 1 ) );	// distribution in range [0, a.size()-1]
- 	
+	std::vector<int> v( sz + 1 );
+
 	for ( size_t i = 0; i <= 2; ++i )
 	{
-		v.at( i ) = dist( rng );
+		v.at( i ) = rand() % static_cast<int>( sz ) + 1;
 	}
 
-	for(size_t i = 0; i <= sz; ++i)
+	for ( size_t i = 0; i <= sz; ++i )
 	{
 		//At position i, replace the next 1 char with '-'
-		str.replace(v.at(i), 1, '-');
-		qDebug(str.toLatin1());
+		str.replace( v.at( i ), 1, "_" );
 	}
 
 	return str;
@@ -155,6 +169,11 @@ void QHangman::paintHangMan()
 	mp.at( errorCnt )();
 }
 
+void QHangman::revealWord()
+{
+	
+}
+
 void QHangman::resetView()
 {
 	scene->clear();
@@ -162,44 +181,26 @@ void QHangman::resetView()
 	errorCnt = 0;
 }
 
-void QHangman::setupConnections()
-{
-	connect( quitBtn.data(), &QPushButton::clicked, this, &QApplication::quit );
-	connect( resetBtn.data(), &QPushButton::clicked, this, &QHangman::resetView );
-	connect( enterBtn.data(), &QPushButton::clicked, this, &QHangman::printWord );
-	connect( lineEdit.data(), &QLineEdit::returnPressed, enterBtn.data(), &QPushButton::click );
-
-	//The enter btn shouldn't be enabled when no text exists in the lineEdit
-	connect( lineEdit.data(), &QLineEdit::textChanged,
-	         this,
-	         [this]()
-	{
-		if ( !lineEdit->text().isEmpty() ) { enterBtn->setEnabled( true ); }
-		else { enterBtn->setEnabled( false ); }
-	});
-
-	//Each time the user wants to write a character, the previous must be erased
-	connect( enterBtn.data(), &QPushButton::clicked, lineEdit.data(), &QLineEdit::clear );
-}
-
-void QHangman::paintEvent( QPaintEvent* e )
-{
-	QPainter painter;
-	QPolygon poly;
-}
-
-void QHangman::printWord()
+void QHangman::printWord(QString temporaryStr)
 {
 	QString character = lineEdit->text();
-	QString temporaryStr = hideWord(mWord);
-	size_t sz = mWord.size();
 
-	temporaryStr.replace(1, 1, QString("-"));
-	outputTextEdit->setText(temporaryStr);
+	outputTextEdit->setText( temporaryStr );
 	if ( !mWord.contains( character, Qt::CaseInsensitive ) )
 	{
 		++errorCnt;
 		paintHangMan();
+	}
+	else
+	{
+		std::vector<int> v(mWord.size());
+		int j{0};
+		
+		while((j=mWord.indexOf(character, j)) != -1) 
+		{
+			
+			++j;
+		}
 	}
 }
 

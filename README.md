@@ -1,7 +1,7 @@
-CMake Qt5 GUI Template
+QHangman
 ----------------------
 
-You need Qt5 and CMake 2.8.11 or higher
+You need Qt5 and CMake 3 or higher
 
 -- Build instructions --
 
