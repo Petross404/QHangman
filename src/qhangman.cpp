@@ -1,6 +1,7 @@
 #include "qhangman.h"
 #include "ui_qhangman.h"
-
+//#include "word.h"
+#include <QMessageBox>
 #include <map>
 #include <functional>
 #include <random>
@@ -8,6 +9,8 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+
+//namespace wd = word;
 
 QHangman::QHangman( QWidget* parent ) :
 	QMainWindow( parent )
@@ -37,7 +40,8 @@ QHangman::QHangman( QWidget* parent ) :
 	, leftArm( new QGraphicsLineItem( 108, 89, 137, 96, Q_NULLPTR ) )
 	, rightLeg( new QGraphicsLineItem( QLineF( QPointF( 89, 129 ), QPointF( 79, 158 ) ) ) )
 	, leftLeg( new QGraphicsLineItem( QLineF( QPointF( 110, 129 ), QPointF( 120, 158 ) ) ) )
-	, mWord( "computer" )
+	, mWord( "computerize" )
+	, temporaryStr( "")
 	, errorCnt( 0 )
 {
 	m_ui->setupUi( this );
@@ -73,7 +77,8 @@ QHangman::QHangman( QWidget* parent ) :
 
 	connect( quitBtn.data(), &QPushButton::clicked, this, &QApplication::quit );
 	connect( resetBtn.data(), &QPushButton::clicked, this, &QHangman::resetView );
-// 	connect( enterBtn.data(), &QPushButton::clicked, this, &QHangman::printWord );
+ 	connect( enterBtn.data(), &QPushButton::clicked, this, &QHangman::printWord );
+
 	connect( lineEdit.data(), &QLineEdit::returnPressed, enterBtn.data(), &QPushButton::click );
 
 	//The enter btn shouldn't be enabled when no text exists in the lineEdit
@@ -89,35 +94,29 @@ QHangman::QHangman( QWidget* parent ) :
 	connect( enterBtn.data(), &QPushButton::clicked, lineEdit.data(), &QLineEdit::clear );
 }
 
-QString QHangman::getStringOfLineEdit()
-{
-	return lineEdit->text();
-}
-
-void QHangman::handleText()
-{
-	QString temporaryStr{hideWord( mWord )};
-	size_t sz = mWord.size();
-
-	printWord(temporaryStr);
-}
-QString QHangman::hideWord( QString str )
+QString QHangman::hideWord(QString str)
 {
 	size_t sz = str.size();
 	std::vector<int> v( sz + 1 );
 
-	for ( size_t i = 0; i <= 2; ++i )
+	for ( size_t i = 0; i <= 2; ++i)
 	{
-		v.at( i ) = rand() % static_cast<int>( sz ) + 1;
+		v.at( i ) = rand() % static_cast<int>( sz );
 	}
 
-	for ( size_t i = 0; i <= sz; ++i )
+	for ( size_t i = 0; i <= sz; ++i)
 	{
 		//At position i, replace the next 1 char with '-'
 		str.replace( v.at( i ), 1, "_" );
 	}
-
+	
 	return str;
+}
+
+void QHangman::handleText()
+{
+	temporaryStr = hideWord( mWord );
+	printWord();
 }
 
 void QHangman::paintHangMan()
@@ -179,9 +178,10 @@ void QHangman::resetView()
 	scene->clear();
 	scene->setBackgroundBrush( QBrush( Qt::white ) );
 	errorCnt = 0;
+	handleText();
 }
 
-void QHangman::printWord(QString temporaryStr)
+void QHangman::printWord()
 {
 	QString character = lineEdit->text();
 
@@ -195,11 +195,19 @@ void QHangman::printWord(QString temporaryStr)
 	{
 		std::vector<int> v(mWord.size());
 		int j{0};
-		
+
 		while((j=mWord.indexOf(character, j)) != -1) 
 		{
-			
+			temporaryStr.replace(j, 1, character);
+			outputTextEdit->setText(temporaryStr);
 			++j;
+		}
+
+		if(temporaryStr == mWord)
+		{
+			QMessageBox box;
+			box.setText("Win!");
+			box.exec();
 		}
 	}
 }

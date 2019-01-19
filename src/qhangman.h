@@ -14,7 +14,6 @@
 #include <QtWidgets/QGraphicsRectItem>
 #include <QtWidgets/QGraphicsEllipseItem>
 
-//#include "word.h"
 
 namespace Ui
 {
@@ -30,13 +29,12 @@ public:
     ~QHangman() override;
 
 public slots:
-    QString getStringOfLineEdit();
     void handleText();
-    void printWord(QString str);
+    QString hideWord(QString str);
+    void printWord();
     void paintHangMan();
     void revealWord();
     void resetView();
-    QString hideWord ( QString str );
 
 private:
     QScopedPointer<Ui::QHangman>	m_ui;
@@ -63,6 +61,7 @@ private:
     QScopedPointer<QGraphicsLineItem>	leftLeg;
 
     QString	mWord;
+    QString	temporaryStr;
     char 	mChar;
     int		errorCnt;
 };

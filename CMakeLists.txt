@@ -20,6 +20,7 @@ find_package(Qt5Widgets CONFIG REQUIRED)
 set(qhangman_SRC
 	src/main.cpp
 	src/qhangman.cpp
+	#src/word.cpp
 )
 
 # Tell CMake to create the helloworld executable
