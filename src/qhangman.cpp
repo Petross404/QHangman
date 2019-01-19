@@ -40,7 +40,7 @@ QHangman::QHangman( QWidget* parent ) :
 	, leftArm( new QGraphicsLineItem( 108, 89, 137, 96, Q_NULLPTR ) )
 	, rightLeg( new QGraphicsLineItem( QLineF( QPointF( 89, 129 ), QPointF( 79, 158 ) ) ) )
 	, leftLeg( new QGraphicsLineItem( QLineF( QPointF( 110, 129 ), QPointF( 120, 158 ) ) ) )
-	, mWord( resetWord() )
+	, mWord( "" )
 	, temporaryStr( "" )
 	, errorCnt( 0 )
 {
@@ -74,7 +74,9 @@ QHangman::QHangman( QWidget* parent ) :
 	view->fitInView( scene.data()->sceneRect(), Qt::KeepAspectRatio );
 
 	srand( static_cast<int>( time( 0 ) ) );		///It's best to call srand only once
-	handleText();
+	mWord = resetWord();
+	temporaryStr = hideWord(mWord);
+	printWord();
 
 	connect( quitBtn.data(), &QPushButton::clicked, this, &QApplication::quit );
 	connect( resetBtn.data(), &QPushButton::clicked, this, &QHangman::resetView );
@@ -93,6 +95,15 @@ QHangman::QHangman( QWidget* parent ) :
 
 	//Each time the user wants to write a character, the previous must be erased
 	connect( enterBtn.data(), &QPushButton::clicked, lineEdit.data(), &QLineEdit::clear );
+	//Finally, the user found the word
+	connect( this, &QHangman::wordIsFound,
+	         this,
+	         [this]()
+	{
+		mWord = resetWord();
+		temporaryStr = hideWord( mWord );
+		printWord();
+	} );
 }
 
 QString QHangman::hideWord( QString str )
@@ -112,12 +123,6 @@ QString QHangman::hideWord( QString str )
 	}
 
 	return str;
-}
-
-void QHangman::handleText()
-{
-	temporaryStr = hideWord( mWord );
-	printWord();
 }
 
 void QHangman::paintHangMan()
@@ -169,17 +174,12 @@ void QHangman::paintHangMan()
 	mp.at( errorCnt )();
 }
 
-void QHangman::revealWord()
-{
-
-}
-
 void QHangman::resetView()
 {
 	scene->clear();
 	scene->setBackgroundBrush( QBrush( Qt::white ) );
 	errorCnt = 0;
-	handleText();
+	printWord();
 }
 
 QString QHangman::resetWord()
@@ -193,7 +193,7 @@ QString QHangman::resetWord()
 		"desktop"
 	};
 	auto i = ( rand() % v.size() ) + 1;
-	return v.at(i);
+	return v.at( i );
 }
 
 void QHangman::printWord()
@@ -202,12 +202,13 @@ void QHangman::printWord()
 
 	outputTextEdit->setText( temporaryStr );
 	if ( ( !mWord.contains( character, Qt::CaseInsensitive ) ) &&
-			( !temporaryStr.contains( character, Qt::CaseInsensitive ) ) )
+	                ( !temporaryStr.contains( character, Qt::CaseInsensitive ) ) )
 	{
 		++errorCnt;
 		paintHangMan();
-	} else if ( ( mWord.contains( character, Qt::CaseInsensitive ) ) &&
-			( !temporaryStr.contains( character, Qt::CaseInsensitive ) ) )
+	}
+	else if ( ( mWord.contains( character, Qt::CaseInsensitive ) ) &&
+	                ( !temporaryStr.contains( character, Qt::CaseInsensitive ) ) )
 	{
 		std::vector<int> v( mWord.size() );
 		int j{0};
@@ -220,10 +221,12 @@ void QHangman::printWord()
 		}
 		if ( temporaryStr == mWord )
 		{
-			QMessageBox::about(this, "Status", "You found the word");
-			outputTextEdit->setText(resetWord());
+			QMessageBox::about( this, "Status", "You found the word" );
+			outputTextEdit->setText( resetWord() );
+			emit wordIsFound();
 		}
 	}
 }
+
 QHangman::~QHangman() = default;
 // kate: indent-mode cstyle; indent-width 8; replace-tabs off; tab-width 8; 
