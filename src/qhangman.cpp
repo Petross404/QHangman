@@ -40,8 +40,8 @@ QHangman::QHangman( QWidget* parent ) :
 	, leftArm( new QGraphicsLineItem( 108, 89, 137, 96, Q_NULLPTR ) )
 	, rightLeg( new QGraphicsLineItem( QLineF( QPointF( 89, 129 ), QPointF( 79, 158 ) ) ) )
 	, leftLeg( new QGraphicsLineItem( QLineF( QPointF( 110, 129 ), QPointF( 120, 158 ) ) ) )
-	, mWord( "computerize" )
-	, temporaryStr( "")
+	, mWord( resetWord() )
+	, temporaryStr( "" )
 	, errorCnt( 0 )
 {
 	m_ui->setupUi( this );
@@ -55,13 +55,14 @@ QHangman::QHangman( QWidget* parent ) :
 	lineEdit->setMaximumHeight( 30 );
 	lineEdit->setFont( QFont( "Oxygen Mono", 9, QFont::Bold ) );
 	lineEdit->setMaxLength( 1 );
+	lineEdit->setFocus();
 	enterBtn->setEnabled( false );
 
 	m_ui->gridLayout->addLayout( gridHangMan.data(), 0, 0 );
 	m_ui->gridLayout->addLayout( vboxWidgets.data(), 0, 1 );
 
 	gridHangMan->addWidget( view.data(), 0, 0 );
-	gridHangMan->addWidget( outputTextEdit.data(), 1, 0);
+	gridHangMan->addWidget( outputTextEdit.data(), 1, 0 );
 	vboxWidgets->addWidget( pointsLabel.data() );
 	vboxWidgets->addWidget( lineEdit.data() );
 	vboxWidgets->addWidget( enterBtn.data() );
@@ -77,7 +78,7 @@ QHangman::QHangman( QWidget* parent ) :
 
 	connect( quitBtn.data(), &QPushButton::clicked, this, &QApplication::quit );
 	connect( resetBtn.data(), &QPushButton::clicked, this, &QHangman::resetView );
- 	connect( enterBtn.data(), &QPushButton::clicked, this, &QHangman::printWord );
+	connect( enterBtn.data(), &QPushButton::clicked, this, &QHangman::printWord );
 
 	connect( lineEdit.data(), &QLineEdit::returnPressed, enterBtn.data(), &QPushButton::click );
 
@@ -94,22 +95,22 @@ QHangman::QHangman( QWidget* parent ) :
 	connect( enterBtn.data(), &QPushButton::clicked, lineEdit.data(), &QLineEdit::clear );
 }
 
-QString QHangman::hideWord(QString str)
+QString QHangman::hideWord( QString str )
 {
 	size_t sz = str.size();
 	std::vector<int> v( sz + 1 );
 
-	for ( size_t i = 0; i <= 2; ++i)
+	for ( size_t i = 0; i <= 2; ++i )
 	{
 		v.at( i ) = rand() % static_cast<int>( sz );
 	}
 
-	for ( size_t i = 0; i <= sz; ++i)
+	for ( size_t i = 0; i <= sz; ++i )
 	{
 		//At position i, replace the next 1 char with '-'
 		str.replace( v.at( i ), 1, "_" );
 	}
-	
+
 	return str;
 }
 
@@ -170,7 +171,7 @@ void QHangman::paintHangMan()
 
 void QHangman::revealWord()
 {
-	
+
 }
 
 void QHangman::resetView()
@@ -181,36 +182,48 @@ void QHangman::resetView()
 	handleText();
 }
 
+QString QHangman::resetWord()
+{
+	std::vector<QString> v
+	{
+		"abcdef",
+		"computer",
+		"house",
+		"kitchen",
+		"desktop"
+	};
+	auto i = ( rand() % v.size() ) + 1;
+	return v.at(i);
+}
+
 void QHangman::printWord()
 {
 	QString character = lineEdit->text();
 
 	outputTextEdit->setText( temporaryStr );
-	if ( !mWord.contains( character, Qt::CaseInsensitive ) )
+	if ( ( !mWord.contains( character, Qt::CaseInsensitive ) ) &&
+			( !temporaryStr.contains( character, Qt::CaseInsensitive ) ) )
 	{
 		++errorCnt;
 		paintHangMan();
-	}
-	else
+	} else if ( ( mWord.contains( character, Qt::CaseInsensitive ) ) &&
+			( !temporaryStr.contains( character, Qt::CaseInsensitive ) ) )
 	{
-		std::vector<int> v(mWord.size());
+		std::vector<int> v( mWord.size() );
 		int j{0};
 
-		while((j=mWord.indexOf(character, j)) != -1) 
+		while ( ( j = mWord.indexOf( character, j ) ) != -1 )
 		{
-			temporaryStr.replace(j, 1, character);
-			outputTextEdit->setText(temporaryStr);
+			temporaryStr.replace( j, 1, character );
+			outputTextEdit->setText( temporaryStr );
 			++j;
 		}
-
-		if(temporaryStr == mWord)
+		if ( temporaryStr == mWord )
 		{
-			QMessageBox box;
-			box.setText("Win!");
-			box.exec();
+			QMessageBox::about(this, "Status", "You found the word");
+			outputTextEdit->setText(resetWord());
 		}
 	}
 }
-
 QHangman::~QHangman() = default;
 // kate: indent-mode cstyle; indent-width 8; replace-tabs off; tab-width 8; 

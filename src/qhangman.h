@@ -35,6 +35,7 @@ public slots:
     void paintHangMan();
     void revealWord();
     void resetView();
+    QString resetWord();
 
 private:
     QScopedPointer<Ui::QHangman>	m_ui;
