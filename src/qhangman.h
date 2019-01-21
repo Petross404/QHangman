@@ -39,10 +39,11 @@ public slots:
 private:
 	QScopedPointer<Ui::QHangman>		m_ui;
 	QScopedPointer<QGridLayout>		gridHangMan;
-	QScopedPointer<QVBoxLayout>		vboxWidgets;
+	QScopedPointer<QGridLayout>		gridWidgets;
 	QScopedPointer<QLabel>			pointsLabel;
 	QScopedPointer<QTextEdit>		outputTextEdit;
 	QScopedPointer<QLineEdit>		lineEdit;
+	QScopedPointer<QLineEdit>		lineWordEdit;
 	QScopedPointer<QPushButton>		enterBtn;
 	QScopedPointer<QPushButton>		wordBtn;
 	QScopedPointer<QPushButton>		resetBtn;

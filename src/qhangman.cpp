@@ -16,13 +16,14 @@ QHangman::QHangman( QWidget* parent ) :
 	QMainWindow( parent )
 	, m_ui( new Ui::QHangman )
 	, gridHangMan( new QGridLayout )
-	, vboxWidgets( new QVBoxLayout )
+	, gridWidgets ( new QGridLayout )
 	, pointsLabel( new QLabel( tr( "Points" ) ) )
 	, outputTextEdit( new QTextEdit )
 	, lineEdit( new QLineEdit )
-	, enterBtn( new QPushButton( tr( "Enter" ) ) )
+	, lineWordEdit( new QLineEdit )
+	, enterBtn( new QPushButton( tr( "Enter single character" ) ) )
 	, wordBtn( new QPushButton( tr( "Enter word" ) ) )
-	, resetBtn( new QPushButton( tr( "Reset Word" ) ) )
+	, resetBtn( new QPushButton( tr( "Reset word" ) ) )
 	, quitBtn( new QPushButton( tr( "Quit" ) ) )
 	, scene( new QGraphicsScene )
 	, view( new QGraphicsView( scene.data() ) )
@@ -47,7 +48,7 @@ QHangman::QHangman( QWidget* parent ) :
 {
 	m_ui->setupUi( this );
 	setMinimumSize( 650, 500 );
-	vboxWidgets->setSizeConstraint( QLayout::SetMaximumSize );
+	gridWidgets->setSizeConstraint( QLayout::SetMaximumSize );
 	outputTextEdit->setTextInteractionFlags( Qt::TextSelectableByMouse
 	                | Qt::TextSelectableByKeyboard );
 	outputTextEdit->setAlignment( Qt::AlignCenter | Qt::AlignVCenter );
@@ -60,15 +61,17 @@ QHangman::QHangman( QWidget* parent ) :
 	enterBtn->setEnabled( false );
 
 	m_ui->gridLayout->addLayout( gridHangMan.data(), 0, 0 );
-	m_ui->gridLayout->addLayout( vboxWidgets.data(), 0, 1 );
+	m_ui->gridLayout->addLayout( gridWidgets.data(), 0, 1 );
 
 	gridHangMan->addWidget( view.data(), 0, 0 );
 	gridHangMan->addWidget( outputTextEdit.data(), 1, 0 );
-	vboxWidgets->addWidget( pointsLabel.data() );
-	vboxWidgets->addWidget( lineEdit.data() );
-	vboxWidgets->addWidget( enterBtn.data() );
-	vboxWidgets->addWidget( resetBtn.data() );
-	vboxWidgets->addWidget( quitBtn.data() );
+	gridWidgets->addWidget( pointsLabel.data(), 0, 0 );
+	gridWidgets->addWidget( lineEdit.data(), 1, 0 );
+	gridWidgets->addWidget( lineWordEdit.data(), 1, 1);
+	gridWidgets->addWidget( enterBtn.data(), 2, 0 );
+	gridWidgets->addWidget( wordBtn.data(), 2, 1);
+	gridWidgets->addWidget( resetBtn.data(), 3, 0 );
+	gridWidgets->addWidget( quitBtn.data(), 4, 0 );
 
 	pointsLabel->setMinimumWidth( 250 );
 	//scene->addPixmap(QPixmap(":/resources/maxresdefault.jpg"));
