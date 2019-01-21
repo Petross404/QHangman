@@ -17,6 +17,8 @@ endif()
 # Find the QtWidgets library
 find_package(Qt5Widgets CONFIG REQUIRED)
 
+qt5_add_resources(qhangman_RES src/resources/hangman.qrc)
+
 set(qhangman_SRC
 	src/main.cpp
 	src/qhangman.cpp

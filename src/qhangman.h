@@ -13,6 +13,7 @@
 #include <QtWidgets/QGraphicsLineItem>
 #include <QtWidgets/QGraphicsRectItem>
 #include <QtWidgets/QGraphicsEllipseItem>
+#include <QtGui/QPixmap>
 
 
 namespace Ui
@@ -36,18 +37,19 @@ public slots:
 	QString resetWord();
 
 private:
-	QScopedPointer<Ui::QHangman>	m_ui;
-	QScopedPointer<QGridLayout>	gridHangMan;
-	QScopedPointer<QVBoxLayout>	vboxWidgets;
-	QScopedPointer<QLabel>		pointsLabel;
-	QScopedPointer<QTextEdit>	outputTextEdit;
-	QScopedPointer<QLineEdit>	lineEdit;
-	QScopedPointer<QPushButton>	enterBtn;
-	QScopedPointer<QPushButton>	resetBtn;
-	QScopedPointer<QPushButton>	quitBtn;
-	QScopedPointer<QGraphicsScene>	scene;
-	QScopedPointer<QGraphicsView>	view;
-	QScopedPointer<QBrush>		brush;
+	QScopedPointer<Ui::QHangman>		m_ui;
+	QScopedPointer<QGridLayout>		gridHangMan;
+	QScopedPointer<QVBoxLayout>		vboxWidgets;
+	QScopedPointer<QLabel>			pointsLabel;
+	QScopedPointer<QTextEdit>		outputTextEdit;
+	QScopedPointer<QLineEdit>		lineEdit;
+	QScopedPointer<QPushButton>		enterBtn;
+	QScopedPointer<QPushButton>		wordBtn;
+	QScopedPointer<QPushButton>		resetBtn;
+	QScopedPointer<QPushButton>		quitBtn;
+	QScopedPointer<QGraphicsScene>		scene;
+	QScopedPointer<QGraphicsView>		view;
+	QScopedPointer<QBrush>			brush;
 	QScopedPointer<QGraphicsLineItem>	lineHorizontal;
 	QScopedPointer<QGraphicsLineItem>	lineVertical;
 	QScopedPointer<QGraphicsLineItem>	lineHorizontalSmall;
@@ -59,12 +61,13 @@ private:
 	QScopedPointer<QGraphicsLineItem>	rightLeg;
 	QScopedPointer<QGraphicsLineItem>	leftLeg;
 
-	QString	mWord;
-	QString	temporaryStr;
-	char 	mChar;
+	QString		mWord;
+	QString		temporaryStr;
+	char 		mChar;
 	int		errorCnt;
 signals:
 	void wordIsFound();
+	void reset();
 };
 
-#endif // QHANGMAN_H
+#endif						// QHANGMAN_H

@@ -21,6 +21,7 @@ QHangman::QHangman( QWidget* parent ) :
 	, outputTextEdit( new QTextEdit )
 	, lineEdit( new QLineEdit )
 	, enterBtn( new QPushButton( tr( "Enter" ) ) )
+	, wordBtn( new QPushButton( tr( "Enter word" ) ) )
 	, resetBtn( new QPushButton( tr( "Reset Word" ) ) )
 	, quitBtn( new QPushButton( tr( "Quit" ) ) )
 	, scene( new QGraphicsScene )
@@ -70,12 +71,13 @@ QHangman::QHangman( QWidget* parent ) :
 	vboxWidgets->addWidget( quitBtn.data() );
 
 	pointsLabel->setMinimumWidth( 250 );
+	//scene->addPixmap(QPixmap(":/resources/maxresdefault.jpg"));
 	view->setAlignment( Qt::AlignCenter | Qt::AlignBottom );
 	view->fitInView( scene.data()->sceneRect(), Qt::KeepAspectRatio );
 
 	srand( static_cast<int>( time( 0 ) ) );		///It's best to call srand only once
 	mWord = resetWord();
-	temporaryStr = hideWord(mWord);
+	temporaryStr = hideWord( mWord );
 	printWord();
 
 	connect( quitBtn.data(), &QPushButton::clicked, this, &QApplication::quit );
@@ -108,15 +110,16 @@ QHangman::QHangman( QWidget* parent ) :
 
 QString QHangman::hideWord( QString str )
 {
-	size_t sz = str.size();
-	std::vector<int> v( sz + 1 );
+	size_t szStr = str.size();
+	size_t nCharsToHide = szStr / 2;
+	std::vector<int> v( szStr + 1 );
 
-	for ( size_t i = 0; i <= 2; ++i )
+	for ( size_t i = 0; i <= nCharsToHide; ++i )
 	{
-		v.at( i ) = rand() % static_cast<int>( sz );
+		v.at( i ) = rand() % static_cast<int>( szStr );
 	}
 
-	for ( size_t i = 0; i <= sz; ++i )
+	for ( size_t i = 0; i <= szStr; ++i )
 	{
 		//At position i, replace the next 1 char with '-'
 		str.replace( v.at( i ), 1, "_" );
@@ -127,10 +130,10 @@ QString QHangman::hideWord( QString str )
 
 void QHangman::paintHangMan()
 {
-#ifndef ENABLE_OFFENSIVE
-	QString msg {"Oops"};
+#ifdef ENABLE_OFFENSIVE
+	QString msg {"Die little bitch!"};
 #else
-	QString msg {"Die!"};
+	QString msg {"Oops!"};
 #endif
 	QPen pen;
 	QPen boldPen;
@@ -179,7 +182,6 @@ void QHangman::resetView()
 	scene->clear();
 	scene->setBackgroundBrush( QBrush( Qt::white ) );
 	errorCnt = 0;
-	printWord();
 }
 
 QString QHangman::resetWord()
@@ -190,32 +192,33 @@ QString QHangman::resetWord()
 		"computer",
 		"house",
 		"kitchen",
-		"desktop"
+		"desktop",
+		"children"
 	};
-	auto i = ( rand() % v.size() ) + 1;
+	auto i = ( rand() % v.size() );
 	return v.at( i );
 }
 
 void QHangman::printWord()
 {
-	QString character = lineEdit->text();
+	QString strChar = lineEdit->text();
 
 	outputTextEdit->setText( temporaryStr );
-	if ( ( !mWord.contains( character, Qt::CaseInsensitive ) ) &&
-	                ( !temporaryStr.contains( character, Qt::CaseInsensitive ) ) )
+	if ( ( !mWord.contains( strChar, Qt::CaseInsensitive ) ) &&
+	                ( !temporaryStr.contains( strChar, Qt::CaseInsensitive ) ) )
 	{
 		++errorCnt;
 		paintHangMan();
 	}
-	else if ( ( mWord.contains( character, Qt::CaseInsensitive ) ) &&
-	                ( !temporaryStr.contains( character, Qt::CaseInsensitive ) ) )
+	else if ( ( mWord.contains( strChar, Qt::CaseInsensitive ) ) &&
+	                ( !temporaryStr.contains( strChar, Qt::CaseInsensitive ) ) )
 	{
 		std::vector<int> v( mWord.size() );
 		int j{0};
 
-		while ( ( j = mWord.indexOf( character, j ) ) != -1 )
+		while ( ( j = mWord.indexOf( strChar, j ) ) != -1 )
 		{
-			temporaryStr.replace( j, 1, character );
+			temporaryStr.replace( j, 1, strChar );
 			outputTextEdit->setText( temporaryStr );
 			++j;
 		}
