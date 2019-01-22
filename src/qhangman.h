@@ -30,10 +30,11 @@ public:
 	~QHangman() override;
 
 public slots:
+	void	celebrate();
 	QString hideWord(QString str);
-	void printWord();
-	void paintHangMan();
-	void resetView();
+	void 	printWord();
+	void 	paintHangMan();
+	void 	resetView();
 	QString resetWord();
 
 private:
@@ -41,6 +42,7 @@ private:
 	QScopedPointer<QGridLayout>		gridHangMan;
 	QScopedPointer<QGridLayout>		gridWidgets;
 	QScopedPointer<QLabel>			pointsLabel;
+	QScopedPointer<QLabel>			warningLabel;
 	QScopedPointer<QTextEdit>		outputTextEdit;
 	QScopedPointer<QLineEdit>		lineEdit;
 	QScopedPointer<QLineEdit>		lineWordEdit;
@@ -72,3 +74,4 @@ signals:
 };
 
 #endif						// QHANGMAN_H
+

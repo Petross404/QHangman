@@ -4,7 +4,8 @@
 #include <QtCore/QString>
 #include <vector>
 
-namespace word{
+namespace word
+{
 // std::vector<QString> mVectorOfWords{
 //     "hello"
 //     "freedom"
@@ -30,7 +31,7 @@ namespace word{
 //     "electricity"
 //     "furniture"
 // };
-// 
+//
 // std::vector<QString> homeRelatedWords{
 //     "furniture"
 //     "kitchen"
@@ -42,7 +43,7 @@ namespace word{
 //     "sheet"
 //     "toilet"
 // };
-// 
+//
 // std::vector<QString> computerRelatedWords{
 //     "motherboard"
 //     "monitor"

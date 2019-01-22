@@ -2,6 +2,8 @@
 #include "ui_qhangman.h"
 //#include "word.h"
 #include <QMessageBox>
+#include <QTimer>
+#include <QtCore/QRegularExpression>
 #include <map>
 #include <functional>
 #include <random>
@@ -16,7 +18,8 @@ QHangman::QHangman( QWidget* parent ) :
 	QMainWindow( parent )
 	, m_ui( new Ui::QHangman )
 	, gridHangMan( new QGridLayout )
-	, gridWidgets ( new QGridLayout )
+	, gridWidgets( new QGridLayout )
+	, warningLabel( new QLabel )
 	, pointsLabel( new QLabel( tr( "Points" ) ) )
 	, outputTextEdit( new QTextEdit )
 	, lineEdit( new QLineEdit )
@@ -44,7 +47,7 @@ QHangman::QHangman( QWidget* parent ) :
 	, leftLeg( new QGraphicsLineItem( QLineF( QPointF( 110, 129 ), QPointF( 120, 158 ) ) ) )
 	, mWord( "" )
 	, temporaryStr( "" )
-	, errorCnt( 0 )
+	, errorCnt( 1 )
 {
 	m_ui->setupUi( this );
 	setMinimumSize( 650, 500 );
@@ -54,24 +57,28 @@ QHangman::QHangman( QWidget* parent ) :
 	outputTextEdit->setAlignment( Qt::AlignCenter | Qt::AlignVCenter );
 	outputTextEdit->setFont( QFont( "Times", 11, QFont::DemiBold ) );
 	outputTextEdit->setMaximumHeight( 35 );
+	warningLabel->setMaximumHeight( 30 );
+	warningLabel->hide();
 	lineEdit->setMaximumHeight( 30 );
 	lineEdit->setFont( QFont( "Oxygen Mono", 9, QFont::Bold ) );
 	lineEdit->setMaxLength( 1 );
 	lineEdit->setFocus();
 	enterBtn->setEnabled( false );
+	wordBtn->setEnabled( false );
 
 	m_ui->gridLayout->addLayout( gridHangMan.data(), 0, 0 );
 	m_ui->gridLayout->addLayout( gridWidgets.data(), 0, 1 );
 
 	gridHangMan->addWidget( view.data(), 0, 0 );
 	gridHangMan->addWidget( outputTextEdit.data(), 1, 0 );
-	gridWidgets->addWidget( pointsLabel.data(), 0, 0 );
-	gridWidgets->addWidget( lineEdit.data(), 1, 0 );
-	gridWidgets->addWidget( lineWordEdit.data(), 1, 1);
-	gridWidgets->addWidget( enterBtn.data(), 2, 0 );
-	gridWidgets->addWidget( wordBtn.data(), 2, 1);
-	gridWidgets->addWidget( resetBtn.data(), 3, 0 );
-	gridWidgets->addWidget( quitBtn.data(), 4, 0 );
+	gridWidgets->addWidget( warningLabel.data(), 0, 0 );
+	gridWidgets->addWidget( pointsLabel.data(), 1, 0 );
+	gridWidgets->addWidget( lineEdit.data(), 2, 0 );
+	gridWidgets->addWidget( lineWordEdit.data(), 2, 1 );
+	gridWidgets->addWidget( enterBtn.data(), 3, 0 );
+	gridWidgets->addWidget( wordBtn.data(), 3, 1 );
+	gridWidgets->addWidget( resetBtn.data(), 4, 0 );
+	gridWidgets->addWidget( quitBtn.data(), 5, 0 );
 
 	pointsLabel->setMinimumWidth( 250 );
 	//scene->addPixmap(QPixmap(":/resources/maxresdefault.jpg"));
@@ -89,26 +96,95 @@ QHangman::QHangman( QWidget* parent ) :
 
 	connect( lineEdit.data(), &QLineEdit::returnPressed, enterBtn.data(), &QPushButton::click );
 
-	//The enter btn shouldn't be enabled when no text exists in the lineEdit
-	connect( lineEdit.data(), &QLineEdit::textChanged,
-	         this,
+	//If the entered word is wrong, hang the user immediately!
+	connect( wordBtn.data(), &QPushButton::clicked, this,
+	         [this]()
+	{
+		if ( lineWordEdit.data()->text() == mWord ) emit wordIsFound();
+		else	//Call paintHangMan until all parts are painted
+		{
+			do
+			{
+				paintHangMan();
+			}
+			while ( errorCnt <= 11 );
+		}
+	} );
+
+	connect( lineEdit.data(), &QLineEdit::textChanged, this,
 	         [this]()
 	{
 		if ( !lineEdit->text().isEmpty() ) { enterBtn->setEnabled( true ); }
 		else { enterBtn->setEnabled( false ); }
+
+		//Digits and other special characters aren't allowed.
+		if ( lineEdit->text().contains( QRegularExpression( "[0-9]" ) )
+		                || lineEdit->text().contains( QRegularExpression( "[[:punct:]]" ) ) )
+		{
+			auto lambda = [this]()
+			{
+				QString msg {QStringLiteral( "d can't be contained" )};
+				QString newline {warningLabel->text().isEmpty() ? QChar( '\0' )
+				                 : QChar( '\n' )};
+				warningLabel->setText( warningLabel->text() + newline + msg );
+				warningLabel->show();
+			};
+			QTimer::singleShot( 400, this, lambda ); //Don't fire up immediately, it's rude.
+		}
+		else
+		{
+			warningLabel->clear();
+			warningLabel->hide();
+		}
+
+	} );
+
+	connect( lineWordEdit.data(), &QLineEdit::textChanged, this,
+	         [this]()
+	{
+		if ( !lineWordEdit->text().isEmpty() ) { wordBtn->setEnabled( true ); }
+		else { wordBtn->setEnabled( false ); }
+
+		if ( lineWordEdit->text().size() == 1 )
+		{
+			auto lambda = [this]()
+			{
+				//It's a stupid hack to re-check the same condition, but with fast enough deletion of the word
+				//the warningLabel can stay shown with the text displayed even if the lineWordEdit size is 0.
+				if ( lineWordEdit->text().size() == 1 )
+				{
+					warningLabel->setText( "Words aren't one character long ya' know!" );
+					warningLabel->show();
+				}
+			};
+			QTimer::singleShot( 400, this, lambda );
+		}
+		else
+		{
+			warningLabel->clear();
+			warningLabel->hide();
+		}
 	} );
 
 	//Each time the user wants to write a character, the previous must be erased
 	connect( enterBtn.data(), &QPushButton::clicked, lineEdit.data(), &QLineEdit::clear );
 	//Finally, the user found the word
-	connect( this, &QHangman::wordIsFound,
-	         this,
+	connect( this, &QHangman::wordIsFound, this,
 	         [this]()
 	{
+		celebrate();
 		mWord = resetWord();
 		temporaryStr = hideWord( mWord );
 		printWord();
 	} );
+}
+
+void QHangman::celebrate()
+{
+	QMessageBox::about( this,
+	                    QStringLiteral( "Hooray!" ),
+	                    QStringLiteral( "You have found the word!" ) );
+	outputTextEdit->setText( resetWord() );
 }
 
 QString QHangman::hideWord( QString str )
@@ -176,8 +252,9 @@ void QHangman::paintHangMan()
 		{11,	drawFinal},
 		{12,	reset}
 	};
-	//Execute!
-	mp.at( errorCnt )();
+
+	//++errorCnt;		//Increment every time this fnc is called.
+	mp.at( errorCnt )();	//Execute!
 }
 
 void QHangman::resetView()
@@ -210,7 +287,6 @@ void QHangman::printWord()
 	if ( ( !mWord.contains( strChar, Qt::CaseInsensitive ) ) &&
 	                ( !temporaryStr.contains( strChar, Qt::CaseInsensitive ) ) )
 	{
-		++errorCnt;
 		paintHangMan();
 	}
 	else if ( ( mWord.contains( strChar, Qt::CaseInsensitive ) ) &&
@@ -227,8 +303,6 @@ void QHangman::printWord()
 		}
 		if ( temporaryStr == mWord )
 		{
-			QMessageBox::about( this, "Status", "You found the word" );
-			outputTextEdit->setText( resetWord() );
 			emit wordIsFound();
 		}
 	}
@@ -236,3 +310,4 @@ void QHangman::printWord()
 
 QHangman::~QHangman() = default;
 // kate: indent-mode cstyle; indent-width 8; replace-tabs off; tab-width 8; 
+
