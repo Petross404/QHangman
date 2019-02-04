@@ -15,7 +15,6 @@
 #include <QtWidgets/QGraphicsEllipseItem>
 #include <QtGui/QPixmap>
 
-
 namespace Ui
 {
 class QHangman;

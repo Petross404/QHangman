@@ -5,12 +5,19 @@
 #include <QTimer>
 #include <QtCore/QRegularExpression>
 #include <map>
+#include <tuple>
 #include <functional>
 #include <random>
+#include <memory>
 #include <vector>
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+
+#define qOverload_l	qOverload<QLayout*, int, int, Qt::Alignment>
+#define qOverload_lw	qOverload<QWidget*, int, int, Qt::Alignment>
+
+#define QRegCondition (lineEdit->text().contains( QRegularExpression( "[0-9]" ) ) || lineEdit->text().contains( QRegularExpression( "[[:punct:]]" ) ) || lineEdit->text().contains( QRegularExpression( "[[:space:]]" ) ) )
 
 //namespace wd = word;
 
@@ -49,30 +56,41 @@ QHangman::QHangman( QWidget* parent ) :
 	, temporaryStr( "" )
 	, errorCnt( 1 )
 {
-	m_ui->setupUi( this );
-	setMinimumSize( 650, 500 );
-	gridWidgets->setSizeConstraint( QLayout::SetMaximumSize );
-	outputTextEdit->setTextInteractionFlags( Qt::TextSelectableByMouse
-	                | Qt::TextSelectableByKeyboard );
-	outputTextEdit->setAlignment( Qt::AlignCenter | Qt::AlignVCenter );
-	outputTextEdit->setFont( QFont( "Times", 11, QFont::DemiBold ) );
-	outputTextEdit->setMaximumHeight( 35 );
-	warningLabel->setMaximumHeight( 30 );
-	warningLabel->hide();
-	lineEdit->setMaximumHeight( 30 );
-	lineEdit->setFont( QFont( "Oxygen Mono", 9, QFont::Bold ) );
-	lineEdit->setMaxLength( 1 );
-	lineEdit->setFocus();
-	enterBtn->setEnabled( false );
-	wordBtn->setEnabled( false );
+	std::invoke( &Ui::QHangman::setupUi, m_ui, this );
+	std::invoke( qOverload<int, int>( &QHangman::setMinimumSize ), this, 650, 500 );
+	std::invoke( &QGridLayout::setSizeConstraint, gridWidgets.data(), QLayout::SetMaximumSize );
+	std::invoke( &QTextEdit::setTextInteractionFlags, outputTextEdit.data(),
+	             ( Qt::TextSelectableByKeyboard |
+	               Qt::TextSelectableByKeyboard ) );
+
+	std::invoke( &QTextEdit::setAlignment,
+	             outputTextEdit.data(),
+	             ( Qt::AlignCenter | Qt::AlignVCenter ) );
+
+	std::invoke( &QTextEdit::setFont, outputTextEdit.data(), ( QFont( "Times", 11, QFont::DemiBold ) ) );
+	std::invoke( &QTextEdit::setMaximumHeight, outputTextEdit.data(), 35 );
+	std::invoke( &QLabel::setMaximumHeight, warningLabel.data(), 30 );
+	std::invoke( &QLabel::hide, warningLabel.data() );
+
+	std::invoke( &QLineEdit::setMaximumHeight, lineEdit.data(), 30 );
+	std::invoke( &QLineEdit::setFont, lineEdit.data(), ( QFont( "Oxygen Mono", 9, QFont::Bold ) ) );
+	std::invoke( &QLineEdit::setMaxLength, lineEdit.data(), 1 );
+	std::invoke( qOverload<>( &QLineEdit::setFocus ), lineEdit.data() );
+	std::invoke( &QPushButton::setEnabled, enterBtn.data(), false );
+	std::invoke( &QPushButton::setEnabled, wordBtn.data(), false );
 
 	m_ui->gridLayout->addLayout( gridHangMan.data(), 0, 0 );
 	m_ui->gridLayout->addLayout( gridWidgets.data(), 0, 1 );
 
-	gridHangMan->addWidget( view.data(), 0, 0 );
-	gridHangMan->addWidget( outputTextEdit.data(), 1, 0 );
-	gridWidgets->addWidget( warningLabel.data(), 0, 0 );
-	gridWidgets->addWidget( pointsLabel.data(), 1, 0 );
+	std::invoke( qOverload_lw( &QGridLayout::addWidget ), gridHangMan.data(),
+	             view.data(), 0, 0, Qt::AlignCenter );
+	std::invoke( qOverload_lw( &QGridLayout::addWidget ), gridHangMan.data(),
+	             outputTextEdit.data(), 1, 0, Qt::AlignCenter );
+
+	std::invoke( qOverload_lw( &QGridLayout::addWidget ), gridWidgets.data(),
+	             warningLabel.data(), 0, 0, Qt::AlignCenter );
+	std::invoke( qOverload_lw( &QGridLayout::addWidget ), gridWidgets.data(),
+	             pointsLabel.data(), 1, 0, Qt::AlignCenter );
 	gridWidgets->addWidget( lineEdit.data(), 2, 0 );
 	gridWidgets->addWidget( lineWordEdit.data(), 2, 1 );
 	gridWidgets->addWidget( enterBtn.data(), 3, 0 );
@@ -80,15 +98,15 @@ QHangman::QHangman( QWidget* parent ) :
 	gridWidgets->addWidget( resetBtn.data(), 4, 0 );
 	gridWidgets->addWidget( quitBtn.data(), 5, 0 );
 
-	pointsLabel->setMinimumWidth( 250 );
-	//scene->addPixmap(QPixmap(":/resources/maxresdefault.jpg"));
-	view->setAlignment( Qt::AlignCenter | Qt::AlignBottom );
-	view->fitInView( scene.data()->sceneRect(), Qt::KeepAspectRatio );
+	std::invoke( &QLabel::setMinimumWidth, pointsLabel.data(), 250 );
+	std::invoke( &QGraphicsView::setAlignment, view.data(), ( Qt::AlignCenter | Qt::AlignBottom ) );
+	std::invoke( qOverload<const QRectF&, Qt::AspectRatioMode>( &QGraphicsView::fitInView ), view.data(),
+	             scene.data()->sceneRect(), Qt::KeepAspectRatio );
 
 	srand( static_cast<int>( time( 0 ) ) );		///It's best to call srand only once
-	mWord = resetWord();
-	temporaryStr = hideWord( mWord );
-	printWord();
+	mWord = std::invoke( &QHangman::resetWord, this );
+	temporaryStr = std::invoke( &QHangman::hideWord, this, mWord );
+	std::invoke( &QHangman::printWord, this );
 
 	connect( quitBtn.data(), &QPushButton::clicked, this, &QApplication::quit );
 	connect( resetBtn.data(), &QPushButton::clicked, this, &QHangman::resetView );
@@ -100,12 +118,12 @@ QHangman::QHangman( QWidget* parent ) :
 	connect( wordBtn.data(), &QPushButton::clicked, this,
 	         [this]()
 	{
-		if ( lineWordEdit.data()->text() == mWord ) emit wordIsFound();
+		if ( std::invoke( &QLineEdit::text, lineWordEdit.data() ) == mWord ) emit wordIsFound();
 		else	//Call paintHangMan until all parts are painted
 		{
 			do
 			{
-				paintHangMan();
+				std::invoke( &QHangman::paintHangMan, this );
 			}
 			while ( errorCnt <= 11 );
 		}
@@ -114,55 +132,75 @@ QHangman::QHangman( QWidget* parent ) :
 	connect( lineEdit.data(), &QLineEdit::textChanged, this,
 	         [this]()
 	{
-		if ( !lineEdit->text().isEmpty() ) { enterBtn->setEnabled( true ); }
-		else { enterBtn->setEnabled( false ); }
-
 		//Digits and other special characters aren't allowed.
-		if ( lineEdit->text().contains( QRegularExpression( "[0-9]" ) )
-		                || lineEdit->text().contains( QRegularExpression( "[[:punct:]]" ) ) )
+		/*if ( lineEdit->text().contains( QRegularExpression( "[0-9]" ) )
+			|| lineEdit->text().contains( QRegularExpression( "[[:punct:]]" ) )
+			|| lineEdit->text().contains( QRegularExpression( "[[:space:]]" ) ) )*/
+		std::function<void()> clear = [this]()
 		{
-			auto lambda = [this]()
+			std::invoke( &QLabel::clear, warningLabel.data() );
+			std::invoke( &QLabel::hide, warningLabel.data() );
+		};
+		auto str = std::invoke( &QLineEdit::text, lineEdit.data() );
+
+		if ( QRegCondition )
+		{
+			std::function<void()> f = [this]()
 			{
-				QString msg {QStringLiteral( "d can't be contained" )};
-				QString newline {warningLabel->text().isEmpty() ? QChar( '\0' )
-				                 : QChar( '\n' )};
-				warningLabel->setText( warningLabel->text() + newline + msg );
-				warningLabel->show();
+				if ( QRegCondition )
+				{
+					QString newline {warningLabel->text().isEmpty() ? QChar( '\0' )
+					                 : QChar( '\n' )};
+					std::invoke( &QLabel::setText, warningLabel.data(),
+					             warningLabel->text() + newline + "the char "
+					             + lineEdit->text() + " can't be contained in a word" );
+
+					std::invoke( &QLabel::show, warningLabel.data() );
+					std::invoke( &QPushButton::setEnabled, enterBtn.data(), false );
+				}
 			};
-			QTimer::singleShot( 400, this, lambda ); //Don't fire up immediately, it's rude.
+			QTimer::singleShot( 400, this, f ); //Don't fire up immediately, it's rude.
+		}
+		else if ( std::invoke( &decltype( str )::size, str ) > 0 )
+		{
+			std::invoke( clear );
+			std::invoke( &QPushButton::setEnabled, enterBtn.data(), true );
 		}
 		else
 		{
-			warningLabel->clear();
-			warningLabel->hide();
+			std::invoke( clear );
 		}
-
 	} );
 
 	connect( lineWordEdit.data(), &QLineEdit::textChanged, this,
 	         [this]()
 	{
-		if ( !lineWordEdit->text().isEmpty() ) { wordBtn->setEnabled( true ); }
-		else { wordBtn->setEnabled( false ); }
+		auto str_ = std::invoke( &QLineEdit::text, lineEdit.data() );
+		if ( !std::invoke( &decltype( str_ )::isEmpty, str_ ) )
+			std::invoke( &QPushButton::setEnabled, wordBtn.data(), true );
+		else
+			std::invoke( &QPushButton::setEnabled, wordBtn.data(), false );
 
-		if ( lineWordEdit->text().size() == 1 )
+		auto str = std::invoke( &QLineEdit::text, lineWordEdit.data() );
+		if ( std::invoke( &decltype( str )::size, str ) == 1 )
 		{
-			auto lambda = [this]()
+			std::function<void()> lambda = [this]()
 			{
 				//It's a stupid hack to re-check the same condition, but with fast enough deletion of the word
 				//the warningLabel can stay shown with the text displayed even if the lineWordEdit size is 0.
 				if ( lineWordEdit->text().size() == 1 )
 				{
-					warningLabel->setText( "Words aren't one character long ya' know!" );
-					warningLabel->show();
+					std::invoke( &QLabel::setText, warningLabel.data(),
+					             QStringLiteral( "Words aren't one character long ya' know!" ) );
+					std::invoke( &QLabel::show, warningLabel.data() );
 				}
 			};
-			QTimer::singleShot( 400, this, lambda );
+			QTimer::singleShot( 400, this, lambda );	//It's rude to fire up a warning immediately
 		}
 		else
 		{
-			warningLabel->clear();
-			warningLabel->hide();
+			std::invoke( &QLabel::clear, warningLabel.data() );
+			std::invoke( &QLabel::hide, warningLabel.data() );
 		}
 	} );
 
@@ -172,10 +210,10 @@ QHangman::QHangman( QWidget* parent ) :
 	connect( this, &QHangman::wordIsFound, this,
 	         [this]()
 	{
-		celebrate();
-		mWord = resetWord();
-		temporaryStr = hideWord( mWord );
-		printWord();
+		std::invoke( &QHangman::celebrate, this );
+		mWord = std::invoke( &QHangman::resetWord, this );
+		temporaryStr = std::invoke( &QHangman::hideWord, this, mWord );
+		std::invoke( &QHangman::printWord, this );
 	} );
 }
 
@@ -184,12 +222,12 @@ void QHangman::celebrate()
 	QMessageBox::about( this,
 	                    QStringLiteral( "Hooray!" ),
 	                    QStringLiteral( "You have found the word!" ) );
-	outputTextEdit->setText( resetWord() );
+	std::invoke( &QTextEdit::setText, outputTextEdit.data(), resetWord() );
 }
 
 QString QHangman::hideWord( QString str )
 {
-	size_t szStr = str.size();
+	size_t szStr = std::invoke( &QString::size, str );
 	size_t nCharsToHide = szStr / 2;
 	std::vector<int> v( szStr + 1 );
 
@@ -201,7 +239,8 @@ QString QHangman::hideWord( QString str )
 	for ( size_t i = 0; i <= szStr; ++i )
 	{
 		//At position i, replace the next 1 char with '-'
-		str.replace( v.at( i ), 1, "_" );
+		std::invoke( qOverload<int, int, const QString&>( &QString::replace ), str,
+		             v.at( i ), 1, "_" );
 	}
 
 	return str;
@@ -218,24 +257,26 @@ void QHangman::paintHangMan()
 	QPen boldPen;
 	pen.setWidth( 2 );
 	boldPen.setWidth( 6 );
-	auto draw1 = [this, pen]() {scene->addLine( lineHorizontal.data()->line(), pen );};
-	auto draw2 = [this, pen]() {scene->addLine( lineVertical.data()->line(), pen );};
-	auto draw3 = [this, pen]() {scene->addLine( lineHorizontalSmall.data()->line(), pen );};
-	auto draw4 = [this, pen]() {scene->addEllipse( ellipseHead.data()->rect(), pen );};
-	auto draw5 = [this, pen]() {scene->addLine( lineNeck.data()->line(), pen );};
-	auto draw6 = [this, pen]() {scene->addRect( rectBody.data()->rect(), pen );};
-	auto draw7 = [this, pen]() {scene->addLine( rightArm.data()->line(), pen );};
-	auto draw8 = [this, pen]() {scene->addLine( leftArm.data()->line(), pen );};
-	auto draw9 = [this, pen]() {scene->addLine( rightLeg.data()->line(), pen );};
-	auto draw10 = [this, pen]() {scene->addLine( leftLeg.data()->line(), pen );};
-	auto drawFinal = [this, msg]()
+	using fncObj = std::function<void()>;
+	fncObj draw1 = [this, pen]() {scene->addLine( lineHorizontal.data()->line(), pen );};
+	fncObj draw2 = [this, pen]() {scene->addLine( lineVertical.data()->line(), pen );};
+	fncObj draw3 = [this, pen]() {scene->addLine( lineHorizontalSmall.data()->line(), pen );};
+	fncObj draw4 = [this, pen]() {scene->addEllipse( ellipseHead.data()->rect(), pen );};
+	fncObj draw5 = [this, pen]() {scene->addLine( lineNeck.data()->line(), pen );};
+	fncObj draw6 = [this, pen]() {scene->addRect( rectBody.data()->rect(), pen );};
+	fncObj draw7 = [this, pen]() {scene->addLine( rightArm.data()->line(), pen );};
+	fncObj draw8 = [this, pen]() {scene->addLine( leftArm.data()->line(), pen );};
+	fncObj draw9 = [this, pen]() {scene->addLine( rightLeg.data()->line(), pen );};
+	fncObj draw10 = [this, pen]() {scene->addLine( leftLeg.data()->line(), pen );};
+	auto  drawFinal = [this, &msg]()
 	{
-		scene->addText( msg, QFont( "Arial", 20 ) );
-		scene->setBackgroundBrush( QBrush( Qt::red ) );
-		enterBtn->setEnabled( false );
-		lineEdit->setEnabled( false );
+		std::invoke( qOverload<const QString&, const QFont&>( &QGraphicsScene::addText ),
+		             scene.data(), ( msg, QFont( "Arial", 20 ) ) );
+		std::invoke( &QGraphicsScene::setBackgroundBrush, scene.data(), QBrush( Qt::red ) );
+		std::invoke( qOverload<bool>(&QPushButton::setEnabled), enterBtn.data(), false );
+		std::invoke( &QLineEdit::setEnabled, lineEdit.data(), false );
 	};
-	auto reset = [this]() {resetView();};
+	fncObj reset = [this]() {resetView();};
 
 	std::map<int, std::function<void()>> mp
 	{
@@ -253,14 +294,14 @@ void QHangman::paintHangMan()
 		{12,	reset}
 	};
 
-	//++errorCnt;		//Increment every time this fnc is called.
+	++errorCnt;		//Increment every time this fnc is called.
 	mp.at( errorCnt )();	//Execute!
 }
 
 void QHangman::resetView()
 {
-	scene->clear();
-	scene->setBackgroundBrush( QBrush( Qt::white ) );
+	std::invoke( &QGraphicsScene::clear, scene );
+	std::invoke( &QGraphicsScene::setBackgroundBrush, scene, ( QtBrush( Qt::White ) ) );
 	errorCnt = 0;
 }
 
@@ -281,24 +322,30 @@ QString QHangman::resetWord()
 
 void QHangman::printWord()
 {
-	QString strChar = lineEdit->text();
+	QString strChar = std::invoke( &QLineEdit::text, lineEdit.data() );
 
-	outputTextEdit->setText( temporaryStr );
-	if ( ( !mWord.contains( strChar, Qt::CaseInsensitive ) ) &&
-	                ( !temporaryStr.contains( strChar, Qt::CaseInsensitive ) ) )
+	std::invoke( &QTextEdit::setText, outputTextEdit.data(), temporaryStr );
+	if ( ( !std::invoke( qOverload<const QString&, Qt::CaseSensitivity>( &QString::contains ), mWord,
+	                     strChar, Qt::CaseInsensitive ) )
+	                && ( !std::invoke( qOverload<const QString&, Qt::CaseSensitivity>( &QString::contains ),
+	                                   temporaryStr, strChar, Qt::CaseInsensitive ) ) )
 	{
-		paintHangMan();
+		std::invoke( &QHangman::paintHangMan, this );
 	}
-	else if ( ( mWord.contains( strChar, Qt::CaseInsensitive ) ) &&
-	                ( !temporaryStr.contains( strChar, Qt::CaseInsensitive ) ) )
+	else if ( ( std::invoke( qOverload<const QString&, Qt::CaseSensitivity>( &QString::contains ), mWord,
+	                         strChar, Qt::CaseInsensitive ) )
+	                && ( !std::invoke( qOverload<const QString&, Qt::CaseSensitivity>( &QString::contains ), temporaryStr,
+	                                   strChar, Qt::CaseInsensitive ) ) )
 	{
-		std::vector<int> v( mWord.size() );
+		std::vector<int> v( std::invoke( &QString::size, mWord ) );
 		int j{0};
 
-		while ( ( j = mWord.indexOf( strChar, j ) ) != -1 )
+		while ( ( j = std::invoke( qOverload<const QString&, int, Qt::CaseSensitivity>( &QString::indexOf ),
+		                           strChar, j, Qt::CaseInsensitive ) ) != -1 )
 		{
-			temporaryStr.replace( j, 1, strChar );
-			outputTextEdit->setText( temporaryStr );
+// 			std::invoke( qOverload<int, int, const QString&>( &QString::replace ), temporaryStr,
+// 			             j, 1, strChar );
+// 			std::invoke( qOverload<const QString&>( &QTextEdit::setText ), temporaryStr );
 			++j;
 		}
 		if ( temporaryStr == mWord )

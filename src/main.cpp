@@ -5,7 +5,7 @@ int main( int argc, char* argv[] )
 {
 	QApplication app( argc, argv );
 	QHangman w;
-	w.show();
+	std::invoke( &QHangman::show, w );
 
 	return app.exec();
 }
